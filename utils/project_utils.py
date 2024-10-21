@@ -148,3 +148,6 @@ def train_model(account_dict):
         })
 
         print(full_content)
+        sleep_time = random.randint(*cfg.sleep_between)
+        print(f"Sleeping for {sleep_time} seconds")
+        time.sleep(sleep_time)
