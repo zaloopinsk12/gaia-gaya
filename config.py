@@ -1,5 +1,5 @@
 # Main settings
-WORKING_NODE = "http://0xbf9c46ac1314e668f89e82c9e76177c0e323b422.us.gaianet.network"
+WORKING_NODE = "http://...us.gaianet.network"
 messages_per_chat = (3, 5) # мин и макс число цепочки сообщений
 sleep_between = (15, 30) # мин и макс число перерыва между сообщениями
 message_timeout = 70
