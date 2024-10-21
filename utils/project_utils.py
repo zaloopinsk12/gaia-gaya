@@ -111,8 +111,9 @@ def train_model(account_dict):
         }
 
         response = session.post(
-            'https://qwencoder.us.gaianet.network/v1/chat/completions',
+            f'{cfg.WORKING_NODE}/v1/chat/completions',
             json=json_data,
+            timeout=40,
         )
 
         full_content = ''
