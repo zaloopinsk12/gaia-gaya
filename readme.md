@@ -13,9 +13,7 @@
    ```bash
    python3 -m venv venv
    source venv/bin/activate
-   pip install web3 fake_useragent loguru
-   
-
+   pip install web3==6.20.1 fake_useragent loguru
 ## Запуск
    ```bash
    python3 main.py
