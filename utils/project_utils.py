@@ -166,5 +166,5 @@ def train_model(account_dict):
             cycle += 1 
 
         except requests.exceptions.Timeout:
-            logger.error("Request timed out. Restarting the current cycle.")
+            logger.error("Request timed out. Creating new chat.")
             continue
