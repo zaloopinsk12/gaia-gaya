@@ -4,6 +4,8 @@ import re
 import string
 import time
 
+import requests
+
 from fake_useragent import UserAgent
 from loguru import logger
 from web3 import Web3
@@ -77,78 +79,92 @@ def get_user_id(account_dict):
 
 
 def train_model(account_dict):
-    session = create_session(account_dict["proxies"])
-    user_id, session = get_user_id(account_dict)
+    cycle = 0
+    while cfg.train_cycles is True or cycle < cfg.train_cycles:
+        try:
+            session = create_session(account_dict["proxies"])
+            user_id, session = get_user_id(account_dict)
 
-    with open('./data/content.txt', 'r') as f:
-        phrases = [line.strip() for line in f if line.strip()]
+            with open('./data/content.txt', 'r') as f:
+                phrases = [line.strip() for line in f if line.strip()]
 
-    n_messages = random.randint(cfg.messages_per_chat[0], cfg.messages_per_chat[1])
+            n_messages = random.randint(cfg.messages_per_chat[0], cfg.messages_per_chat[1])
 
-    messages = [
-        {
-            "role": "system",
-            "content": cfg.system_prompt
-        }
-    ]
+            messages = [
+                {
+                    "role": "system",
+                    "content": cfg.system_prompt
+                }
+            ]
 
-    for _ in range(n_messages):
-        user_phrase = random.choice(phrases)
+            for _ in range(n_messages):
+                user_phrase = random.choice(phrases)
 
-        messages.append({
-            "role": "user",
-            "content": user_phrase
-        })
+                messages.append({
+                    "role": "user",
+                    "content": user_phrase
+                })
 
-        json_data = {
-            "model": "Qwen1.5-0.5B-Chat-Q5_K_M",
-            "messages": messages,
-            "stream": True,
-            "stream_options": {
-                "include_usage": True
-            },
-            "user": user_id
-        }
+                json_data = {
+                    "model": "Qwen1.5-0.5B-Chat-Q5_K_M",
+                    "messages": messages,
+                    "stream": True,
+                    "stream_options": {
+                        "include_usage": True
+                    },
+                    "user": user_id
+                }
+                url = cfg.WORKING_NODE
+                if not url.startswith('https://'):
+                    url = 'https://' + url
+                if not url.endswith('/'):
+                    url = url + '/'
 
-        response = session.post(
-            f'{cfg.WORKING_NODE}/v1/chat/completions',
-            json=json_data,
-            timeout=40,
-        )
+                response = session.post(
+                    f'{url}v1/chat/completions',
+                    json=json_data,
+                    timeout=cfg.message_timeout,
+                )
 
-        full_content = ''
+                full_content = ''
 
-        for line in response.iter_lines():
-            if line:
-                decoded_line = line.decode('utf-8')
-                if decoded_line.startswith('data: '):
-                    json_data_line = decoded_line[len('data: '):]
-                    if json_data_line.strip() == '[DONE]':
-                        continue
-                    try:
-                        data = json.loads(json_data_line)
-                        choices = data.get('choices', [])
-                        if not choices:
-                            continue
-                        delta = choices[0].get('delta', {})
-                        content = delta.get('content', '')
-                        full_content += content
-                    except json.JSONDecodeError as e:
-                        print(f"JSON decode error: {e}")
-                        continue
-                    except IndexError as e:
-                        print(f"Index error: {e}")
-                        continue
-                    except KeyError as e:
-                        print(f"Key error: {e}")
-                        continue
+                for line in response.iter_lines():
+                    if line:
+                        decoded_line = line.decode('utf-8')
+                        if decoded_line.startswith('data: '):
+                            json_data_line = decoded_line[len('data: '):]
+                            if json_data_line.strip() == '[DONE]':
+                                continue
+                            try:
+                                data = json.loads(json_data_line)
+                                choices = data.get('choices', [])
+                                if not choices:
+                                    continue
+                                delta = choices[0].get('delta', {})
+                                content = delta.get('content', '')
+                                full_content += content
+                            except json.JSONDecodeError as e:
+                                print(f"JSON decode error: {e}")
+                                continue
+                            except IndexError as e:
+                                print(f"Index error: {e}")
+                                continue
+                            except KeyError as e:
+                                print(f"Key error: {e}")
+                                continue
 
-        messages.append({
-            "role": "assistant",
-            "content": full_content
-        })
+                messages.append({
+                    "role": "assistant",
+                    "content": full_content
+                })
 
-        print(full_content)
-        sleep_time = random.randint(*cfg.sleep_between)
-        print(f"Sleeping for {sleep_time} seconds")
-        time.sleep(sleep_time)
+                logger.success(full_content)
+                sleep_time = random.randint(*cfg.sleep_between)
+                logger.info(f"Sleeping for {sleep_time} seconds")
+                time.sleep(sleep_time)
+
+            cycle += 1 
+
+        except requests.exceptions.Timeout:
+            logger.error("Request timed out. Restarting the current cycle.")
+            continue
