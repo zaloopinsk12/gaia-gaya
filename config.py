@@ -1,5 +1,5 @@
 # Main settings
-WORKING_NODE = "http://...us.gaianet.network" # тренируемая нода
+WORKING_NODE = "https://...us.gaianet.network" # тренируемая нода
 messages_per_chat = (3, 5) # мин и макс число сообщений в одном чате
 train_cycles = True # True если бесконечно тренировать, либо любое число циклов
 sleep_between = (15, 30) # мин и макс число перерыва между сообщениями
