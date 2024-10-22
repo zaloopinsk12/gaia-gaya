@@ -1,10 +1,11 @@
 # Main settings
-WORKING_NODE = "http://...us.gaianet.network"
-messages_per_chat = (3, 5) # мин и макс число цепочки сообщений
+WORKING_NODE = "http://...us.gaianet.network" # тренируемая нода
+messages_per_chat = (3, 5) # мин и макс число сообщений в одном чате
+train_cycles = True # True если бесконечно тренировать, либо любое число циклов
 sleep_between = (15, 30) # мин и макс число перерыва между сообщениями
-message_timeout = 70
-system_prompt = "You are an AI assistant designed to provide clear, concise, and accurate answers to user queries. Your primary functions include retrieving relevant information from the provided RAG (Retrieval-Augmented Generation) data and utilizing your pre-training data when necessary. Make your answer as short as possible that suitable for the length of a tweet. If no relevant information is found, you will inform the user that you are not familiar with the knowledge."
+message_timeout = 40 # сколько времени ждать на ответ от AI
 
+system_prompt = "You are an AI assistant designed to provide clear, concise, and accurate answers to user queries. Your primary functions include retrieving relevant information from the provided RAG (Retrieval-Augmented Generation) data and utilizing your pre-training data when necessary. Make your answer as short as possible that suitable for the length of a tweet. If no relevant information is found, you will inform the user that you are not familiar with the knowledge."
 
 
 # Other settings
